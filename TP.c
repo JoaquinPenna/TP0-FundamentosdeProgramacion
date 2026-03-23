@@ -18,19 +18,13 @@ const int PUNTOS_2_INCORRECTA = -300;
 const int NUMERO_OPCIONES_2 = 2;
 const int OPCIONES_2[] = {'S', 'N'};
 
-//1.preguntar
-//2.escanear input
-//3.verificar input. si es valido, pasar a siguiente pregunta, si es falso (y le quedan intentos) o es invalido seguir preguntando
-//	3.1 si es valido: se debe sumar la cantidad de puntos segun la pregunta, y aumentar un coounter que mantenga cuenta de la pregunta en la que nos encontramos
-//	3.2 si es falso: sumar uno al counter de intentos. si el counter = 3, imprimir -RECHAZADO- y salir del programa. si le quedan intentos, imprimir sus intentos restantes y seguir preguntando
-//	3.3 si es invalido, no se suman intentos, solo tomar chars mayusculas
-
-//ideas:
-//	tener un diccionario por pregunta en el cual tenes el caracter asociado a cada respuesta como key y como valor tiene la respuesta en si. con eso podriamos imprimir los menus de manera que se puedan cambiar mas facilmente las preguntas si asi se desea
-
+const int MIN_SACRIFICIO = 0;
+const int MAX_SACRIFICIO = 12;
+const int STEP = 3;
+const int PUNTOS[5] = {-100, 10, 40, 70, 120};
 
 void imprimir_menu(int pregunta);
-int puntos_ganados(int pregunta, int intentos, bool respuesta_2);
+int puntos_ganados(int pregunta, int intentos, int respuesta);
 bool es_respuesta_valida(char respuesta, int pregunta);
 
 int main(void){
@@ -78,9 +72,7 @@ int main(void){
 	pregunta++;
 	
 
-//pregunta 2
-
-	
+//pregunta 2	
 	do{
 		imprimir_menu(pregunta);
 		scanf(" %c",&chartmp);
@@ -100,13 +92,25 @@ int main(void){
 	puntos_total += puntos_2;
 	printf("Puntos totales: %d\n",puntos_total);
 	
+	pregunta++;
 
 //pregunta 3
-
-	
-
+	pregunta++;
 
 
+//pregunta 4
+	int respuesta_4 = 0;
+	do{
+		imprimir_menu(pregunta);
+		scanf("%d", &respuesta_4);
+	}while( !(respuesta_4 >= MIN_SACRIFICIO && respuesta_4 <= MAX_SACRIFICIO) );
+
+	int puntos_4 = puntos_ganados(pregunta,0,respuesta_4);
+	printf("Puntos: %d\n", puntos_4);
+	puntos_total += puntos_4;
+	printf("Puntos totales: %d\n",puntos_total);
+
+	pregunta++;
 
 
 	return 0;
@@ -128,7 +132,7 @@ void imprimir_menu(int pregunta){
 			printf("3. ¿Cuál es su fecha de nacimiento? (formato: yyyy/mm)\n");
 			break;
 		case 4:
-			printf("4. ¿Cuántas donas estaría dispuesto a sacrificar para el Número Uno?\n");
+			printf("4. ¿Cuántas donas estaría dispuesto a sacrificar para el Número Uno? [%d-%d]\n", MIN_SACRIFICIO, MAX_SACRIFICIO);
 			break;
 		default:
 			printf("DEBUG: NO DEBERIA LLEGAR A ESTE PUNTO, CHEQUEAR NUMERO DE PREGUNTA QUE SE PASA COMO ARGUMENTO\n");
@@ -136,21 +140,36 @@ void imprimir_menu(int pregunta){
 	}
 }
 
-int puntos_ganados(int pregunta, int intentos, bool respuesta_2){
+int puntos_ganados(int pregunta, int intentos, int respuesta){
 	switch(pregunta){
 		case 1:
 			return PUNTOS_CORRECTA_1 - (intentos*PUNTOS_PERDIDOS_POR_INTENTO);
 			break;
+
 		case 2:
-			if(respuesta_2 == true){
+			if(respuesta == true){
 				return PUNTOS_2_CORRECTA;
 			}else{
 				return PUNTOS_2_INCORRECTA;
 			}
 			break;
+
+		case 4:
+			int upper_range = 0;
+			for(int i = 0; upper_range <= MAX_SACRIFICIO; i++){
+				int lower_range = (MIN_SACRIFICIO+(STEP*i))+1;
+				upper_range = MIN_SACRIFICIO+(STEP*(i+1));
+				
+				if(respuesta == MIN_SACRIFICIO){
+					return PUNTOS[0];
+				}else if(respuesta >= lower_range && respuesta <= upper_range){
+					return PUNTOS[i+1];
+				}
+			}
+
 	}
-	return 666;
-}
+	return 0;
+}	
 
 bool es_respuesta_valida(char respuesta, int pregunta){
 	switch(pregunta){
