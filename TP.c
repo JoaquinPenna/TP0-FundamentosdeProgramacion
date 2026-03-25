@@ -26,6 +26,7 @@ const int PUNTOS[5] = {-100, 10, 40, 70, 120};
 void imprimir_menu(int pregunta);
 int puntos_ganados(int pregunta, int intentos, int respuesta);
 bool es_respuesta_valida(char respuesta, int pregunta);
+int suma_total_actual(int puntos_inicio, int puntos_pregunta);
 
 int main(void){
 
@@ -49,10 +50,7 @@ int main(void){
 		scanf(" %c",&respuesta_1);
 
 		if(respuesta_1 == OPCION_CORRECTA_1){
-			int puntos_1 = puntos_ganados(pregunta, intentos, false);
-			printf("Respuesta correcta!\t +%d puntos\n", puntos_1);
-			puntos_total += puntos_1;
-			printf("Puntos totales: %d\n",puntos_total);
+			puntos_total = suma_total_actual(puntos_total, puntos_ganados(pregunta, intentos, false));
 			respuesta_1_correcta = true;
 		}
 		else if( es_respuesta_valida(respuesta_1, pregunta) ){ 
@@ -86,11 +84,8 @@ int main(void){
 			printf("%s",MENSAJE_RESPUESTA_INVALIDA);
 		}
 	}while( !respuesta_2_es_valida);
-
-	int puntos_2 = puntos_ganados(pregunta, 0, respuesta_2);
-	printf("Puntos: %d\n", puntos_2);
-	puntos_total += puntos_2;
-	printf("Puntos totales: %d\n",puntos_total);
+	
+	puntos_total = suma_total_actual(puntos_total, puntos_ganados(pregunta, 0, respuesta_2));
 	
 	pregunta++;
 
@@ -104,12 +99,9 @@ int main(void){
 		imprimir_menu(pregunta);
 		scanf("%d", &respuesta_4);
 	}while( !(respuesta_4 >= MIN_SACRIFICIO && respuesta_4 <= MAX_SACRIFICIO) );
-
-	int puntos_4 = puntos_ganados(pregunta,0,respuesta_4);
-	printf("Puntos: %d\n", puntos_4);
-	puntos_total += puntos_4;
-	printf("Puntos totales: %d\n",puntos_total);
-
+	
+	puntos_total = suma_total_actual(puntos_total, puntos_ganados(pregunta,0,respuesta_4));
+	
 	pregunta++;
 
 
@@ -193,4 +185,9 @@ bool es_respuesta_valida(char respuesta, int pregunta){
 	return false;
 }
 
-
+int suma_total_actual(int puntos_inicio, int puntos_pregunta){
+	   int puntos_fin = puntos_inicio + puntos_pregunta;
+	   printf("puntos obtenidos: %d\n",puntos_pregunta);
+	   printf("puntaje total: %d\n",puntos_fin);
+	   return puntos_fin;
+}
