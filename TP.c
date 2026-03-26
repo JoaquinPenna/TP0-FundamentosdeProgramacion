@@ -23,10 +23,23 @@ const int MAX_SACRIFICIO = 12;
 const int STEP = 3;
 const int PUNTOS[5] = {-100, 10, 40, 70, 120};
 
+const int AÑO_ACTUAL = 2026;
+const int AÑO_MINIMO = 1926;
+const int MES_ACTUAL = 3;
+const int PUNTOS_POR_EDAD = 2;
+
+const int LIMITES_FINALES[] = {0, 151, 251, 350};
+const char RANGOS_FINALES[][MAXLINE] = {"-ASPIRANTE-", "-MAGIO NOVATO-", "-MAGIO-", "-LIDER SUPREMO"};
+const int NRO_RANGOS = 4;
+
 void imprimir_menu(int pregunta);
 int puntos_ganados(int pregunta, int intentos, int respuesta);
-bool es_respuesta_valida(char respuesta, int pregunta);
+bool es_respuesta_valida(int respuesta, int pregunta);
 int suma_total_actual(int puntos_inicio, int puntos_pregunta);
+bool fecha_valida( int año, int mes, char separador);
+int calcular_edad(int año, int mes);
+int resultado_final(int puntos_totales);
+
 
 int main(void){
 
@@ -35,14 +48,21 @@ int main(void){
 
 	bool respuesta_1_correcta = false;
 	int intentos = 0;
-	char respuesta_1;
+	char respuesta_1 = '\0';
+	int puntos_1 = 0;
 
 	bool respuesta_2;
 	char chartmp;
-	bool respuesta_2_es_valida = false;
+	int puntos_2 = 0;
 
-//	bool respuesta_3_correcta = false;
-//	bool respuesta_4_correcta = false;
+	int puntos_3 = 0;
+	int año = 0;
+	int mes = 0;
+	int edad = 0;
+
+	int respuesta_4 = 0;
+	int puntos_4 = 0;
+
 
 //pregunta 1
 	do{
@@ -50,7 +70,7 @@ int main(void){
 		scanf(" %c",&respuesta_1);
 
 		if(respuesta_1 == OPCION_CORRECTA_1){
-			puntos_total = suma_total_actual(puntos_total, puntos_ganados(pregunta, intentos, false));
+			puntos_1 = puntos_ganados(pregunta, intentos, false);
 			respuesta_1_correcta = true;
 		}
 		else if( es_respuesta_valida(respuesta_1, pregunta) ){ 
@@ -76,34 +96,56 @@ int main(void){
 		scanf(" %c",&chartmp);
 	       	if(chartmp == 'S'){
 			respuesta_2 = true;
-			respuesta_2_es_valida = true;
 		}else if(chartmp == 'N'){
 			respuesta_2 = false;
-			respuesta_2_es_valida = true;
 		}else{
 			printf("%s",MENSAJE_RESPUESTA_INVALIDA);
 		}
-	}while( !respuesta_2_es_valida);
+	}while( !es_respuesta_valida(chartmp, pregunta));
 	
-	puntos_total = suma_total_actual(puntos_total, puntos_ganados(pregunta, 0, respuesta_2));
+	puntos_2 = puntos_ganados(pregunta, 0, respuesta_2);
 	
 	pregunta++;
 
+
 //pregunta 3
+	char separador = '\0';
+	do{
+		printf("Fecha de nacimiento[yyyy/mm]: ");
+		scanf("%d%c%d", &año, &separador, &mes);
+	}while( !fecha_valida(año, mes, separador) );
+
+	edad = calcular_edad(año, mes);
+	if (edad < 18){
+		printf("-RECHAZADO-\n");
+		return 1;
+	}else{
+		puntos_3 = puntos_ganados(pregunta, 0, edad);
+	}
 	pregunta++;
 
 
 //pregunta 4
-	int respuesta_4 = 0;
 	do{
 		imprimir_menu(pregunta);
 		scanf("%d", &respuesta_4);
-	}while( !(respuesta_4 >= MIN_SACRIFICIO && respuesta_4 <= MAX_SACRIFICIO) );
+	}while( !(es_respuesta_valida(respuesta_4, pregunta)) );
 	
-	puntos_total = suma_total_actual(puntos_total, puntos_ganados(pregunta,0,respuesta_4));
+	puntos_4 = puntos_ganados(pregunta,0,respuesta_4);
 	
 	pregunta++;
 
+
+//fin de las preguntas
+	puntos_total = puntos_1 + puntos_2 + puntos_3 + puntos_4;
+	printf("puntaje total = %d\nPregunta 1: %d\nPregunta 2: %d\nPregunta 3: %d\nPregunta 4: %d\n", puntos_total, puntos_1, puntos_2, puntos_3, puntos_4);
+
+	if(resultado_final(puntos_total) == 666){
+		printf("-RECHAZADO-\n");
+		return 1;
+	}
+
+	printf("%s\n", RANGOS_FINALES[resultado_final(puntos_total)]);
 
 	return 0;
 }
@@ -146,6 +188,10 @@ int puntos_ganados(int pregunta, int intentos, int respuesta){
 			}
 			break;
 
+		case 3:
+			return respuesta * PUNTOS_POR_EDAD;
+			break;
+
 		case 4:
 			int upper_range = 0;
 			for(int i = 0; upper_range <= MAX_SACRIFICIO; i++){
@@ -163,7 +209,7 @@ int puntos_ganados(int pregunta, int intentos, int respuesta){
 	return 0;
 }	
 
-bool es_respuesta_valida(char respuesta, int pregunta){
+bool es_respuesta_valida(int respuesta, int pregunta){
 	switch(pregunta){
 		case 1:
 			for(int i = 0; i < NUMERO_OPCIONES_1; i++){
@@ -173,21 +219,61 @@ bool es_respuesta_valida(char respuesta, int pregunta){
 			}
 			return false;
 			break;
+
 		case 2:
-			for(int i = 0; i < NUMERO_OPCIONES_2; i++){
-				if(OPCIONES_2[i] == respuesta){
-					return true;
-				}
-			}
-			return false;
+			return respuesta == 'S' || respuesta == 'N';
+			break;
+
+		case 4:
+			return respuesta >= MIN_SACRIFICIO && respuesta <= MAX_SACRIFICIO;
 			break;
 	}
 	return false;
 }
 
 int suma_total_actual(int puntos_inicio, int puntos_pregunta){
-	   int puntos_fin = puntos_inicio + puntos_pregunta;
-	   printf("puntos obtenidos: %d\n",puntos_pregunta);
-	   printf("puntaje total: %d\n",puntos_fin);
-	   return puntos_fin;
+	int puntos_fin = puntos_inicio + puntos_pregunta;
+	printf("puntos obtenidos: %d\n",puntos_pregunta);
+	printf("puntaje total: %d\n",puntos_fin);
+	return puntos_fin;
 }
+
+bool fecha_valida( int año, int mes, char separador){
+	if( año < 0 || mes < 0 || separador != '/' ){
+		printf("%s",  MENSAJE_RESPUESTA_INVALIDA);
+		return false;
+	}else if( año < 1000 || año > 9999 ){
+		printf("%s",  MENSAJE_RESPUESTA_INVALIDA);
+		return false;
+	}else if( mes < 1 || mes > 12 ){
+		printf("%s",  MENSAJE_RESPUESTA_INVALIDA);
+		return false;
+	}else if( (año == AÑO_ACTUAL && mes > MES_ACTUAL) || año > AÑO_ACTUAL ){
+		printf("%s",  MENSAJE_RESPUESTA_INVALIDA);
+		return false;
+	}else if( (año == AÑO_MINIMO && mes < MES_ACTUAL) || año < AÑO_MINIMO ){
+		printf("%s",  MENSAJE_RESPUESTA_INVALIDA);
+		return false;
+	}
+	return true;
+}
+
+int calcular_edad(int año, int mes){
+	int edad = AÑO_ACTUAL - año;
+	if( mes < MES_ACTUAL ){
+		return edad;
+	}else{
+		return edad-1;
+	}
+}
+
+//return index to the thingamajig
+int resultado_final(int puntos_totales){
+	for(int i = NRO_RANGOS; i >= 0; i--){
+		if( puntos_totales >= LIMITES_FINALES[i] ){
+			return i;
+		}
+	}
+	return 666;
+}
+
