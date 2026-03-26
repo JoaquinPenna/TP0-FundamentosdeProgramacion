@@ -28,33 +28,33 @@ const int AÑO_MINIMO = 1926;
 const int MES_ACTUAL = 3;
 const int PUNTOS_POR_EDAD = 2;
 
-const int LIMITES_FINALES[] = {0, 151, 251, 350};
-const char RANGOS_FINALES[][MAXLINE] = {"-ASPIRANTE-", "-MAGIO NOVATO-", "-MAGIO-", "-LIDER SUPREMO"};
-const int NRO_RANGOS = 4;
+const int LIMITES_FINALES[] = {0,151,251,350};
+const char RESULTADOS_FINALES[][MAXLINE] = { "-ASPIRANTE-", "-MAGIO NOVATO-", "-MAGIO-", "-LIDER SUPREMO-"};
+const int TOPE_RESULTADOS = 3;
 
 void imprimir_menu(int pregunta);
-int puntos_ganados(int pregunta, int intentos, int respuesta);
 bool es_respuesta_valida(int respuesta, int pregunta);
-int suma_total_actual(int puntos_inicio, int puntos_pregunta);
 bool fecha_valida( int año, int mes, char separador);
+int puntos_ganados(int pregunta, int intentos, int respuesta);
 int calcular_edad(int año, int mes);
-int resultado_final(int puntos_totales);
+void resultado_final(int puntos_totales);
 
 
 int main(void){
 
-	int pregunta = 1;
+	int pregunta = 0;
 	int puntos_total = 0;
 
 	bool respuesta_1_correcta = false;
 	int intentos = 0;
-	char respuesta_1 = '\0';
 	int puntos_1 = 0;
+	char respuesta_1 = '\0';
 
 	bool respuesta_2;
 	char chartmp;
 	int puntos_2 = 0;
 
+	char separador = '\0';
 	int puntos_3 = 0;
 	int año = 0;
 	int mes = 0;
@@ -64,6 +64,7 @@ int main(void){
 	int puntos_4 = 0;
 
 
+	pregunta++;
 //pregunta 1
 	do{
 		imprimir_menu(pregunta);
@@ -87,6 +88,7 @@ int main(void){
 			printf("%s",MENSAJE_RESPUESTA_INVALIDA);
 		}
 	}while( !respuesta_1_correcta ); 
+	printf("%d puntos\n", puntos_1);
 	pregunta++;
 	
 
@@ -104,14 +106,14 @@ int main(void){
 	}while( !es_respuesta_valida(chartmp, pregunta));
 	
 	puntos_2 = puntos_ganados(pregunta, 0, respuesta_2);
+	printf("%d puntos\n", puntos_2);
 	
 	pregunta++;
 
 
 //pregunta 3
-	char separador = '\0';
 	do{
-		printf("Fecha de nacimiento[yyyy/mm]: ");
+		imprimir_menu(pregunta);
 		scanf("%d%c%d", &año, &separador, &mes);
 	}while( !fecha_valida(año, mes, separador) );
 
@@ -121,6 +123,7 @@ int main(void){
 		return 1;
 	}else{
 		puntos_3 = puntos_ganados(pregunta, 0, edad);
+		printf("%d puntos\n", puntos_3);
 	}
 	pregunta++;
 
@@ -132,22 +135,20 @@ int main(void){
 	}while( !(es_respuesta_valida(respuesta_4, pregunta)) );
 	
 	puntos_4 = puntos_ganados(pregunta,0,respuesta_4);
+	printf("%d puntos\n", puntos_4);
 	
 	pregunta++;
 
 
 //fin de las preguntas
+
 	puntos_total = puntos_1 + puntos_2 + puntos_3 + puntos_4;
 	printf("puntaje total = %d\nPregunta 1: %d\nPregunta 2: %d\nPregunta 3: %d\nPregunta 4: %d\n", puntos_total, puntos_1, puntos_2, puntos_3, puntos_4);
 
-	if(resultado_final(puntos_total) == 666){
-		printf("-RECHAZADO-\n");
-		return 1;
-	}
-
-	printf("%s\n", RANGOS_FINALES[resultado_final(puntos_total)]);
+	resultado_final(puntos_total);
 
 	return 0;
+
 }
 
 
@@ -163,14 +164,11 @@ void imprimir_menu(int pregunta){
 			printf("2. ¿Promete mantener en secreto la existencia de los Magios?\n\t[S] si\n\t[N] no\n"); // hacer que funcione con un forlup
 			break;
 		case 3:
-			printf("3. ¿Cuál es su fecha de nacimiento? (formato: yyyy/mm)\n");
+			printf("3. Fecha de nacimiento[yyyy/mm]: ");
 			break;
 		case 4:
 			printf("4. ¿Cuántas donas estaría dispuesto a sacrificar para el Número Uno? [%d-%d]\n", MIN_SACRIFICIO, MAX_SACRIFICIO);
 			break;
-		default:
-			printf("DEBUG: NO DEBERIA LLEGAR A ESTE PUNTO, CHEQUEAR NUMERO DE PREGUNTA QUE SE PASA COMO ARGUMENTO\n");
-			break;	
 	}
 }
 
@@ -231,13 +229,6 @@ bool es_respuesta_valida(int respuesta, int pregunta){
 	return false;
 }
 
-int suma_total_actual(int puntos_inicio, int puntos_pregunta){
-	int puntos_fin = puntos_inicio + puntos_pregunta;
-	printf("puntos obtenidos: %d\n",puntos_pregunta);
-	printf("puntaje total: %d\n",puntos_fin);
-	return puntos_fin;
-}
-
 bool fecha_valida( int año, int mes, char separador){
 	if( año < 0 || mes < 0 || separador != '/' ){
 		printf("%s",  MENSAJE_RESPUESTA_INVALIDA);
@@ -267,13 +258,19 @@ int calcular_edad(int año, int mes){
 	}
 }
 
-//return index to the thingamajig
-int resultado_final(int puntos_totales){
-	for(int i = NRO_RANGOS; i >= 0; i--){
-		if( puntos_totales >= LIMITES_FINALES[i] ){
-			return i;
-		}
-	}
-	return 666;
-}
 
+void resultado_final(int puntos){
+	
+	int i = 0;
+	if ( puntos < LIMITES_FINALES[i] ){
+		printf("-RECHAZADO-");
+	}else if ( puntos >= LIMITES_FINALES[TOPE_RESULTADOS] ){
+		printf("%s",RESULTADOS_FINALES[TOPE_RESULTADOS]);
+	}
+	while( i <= TOPE_RESULTADOS ){
+		if( puntos >= LIMITES_FINALES[i] && puntos < LIMITES_FINALES[i+1] ){
+			printf("%s",RESULTADOS_FINALES[i]);
+		}
+		i++;
+	}
+}
